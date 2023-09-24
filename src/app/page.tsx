@@ -5,6 +5,7 @@ import Avatar2Image from "@/assets/images/avatars/avatar-2.png";
 import Avatar3Image from "@/assets/images/avatars/avatar-3.png";
 import { Input } from "@/components/input";
 import { Form } from "@/components/game-form";
+import { revalidatePath } from "next/cache";
 
 const list = [
   {
@@ -31,7 +32,6 @@ const list = [
 ];
 
 export default function Home() {
-  //TODO: refresh is not working, update it
   async function add(formData: FormData) {
     "use server";
     for (const entry of formData.values()) {
@@ -48,6 +48,7 @@ export default function Home() {
         text: val,
       });
     }
+    revalidatePath("/");
   }
   return (
     <main className="flex flex-col justify-center">
