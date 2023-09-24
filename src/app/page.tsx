@@ -31,6 +31,7 @@ const list = [
 ];
 
 export default function Home() {
+  //TODO: refresh is not working, update it
   async function add(formData: FormData) {
     "use server";
     for (const entry of formData.values()) {
