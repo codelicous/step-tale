@@ -4,8 +4,8 @@ import Image from "next/image";
 export function Avatar({ src }: { src: string | StaticImport }) {
   return (
     <Image
-      width={60}
-      height={60}
+      width={40}
+      height={40}
       src={src}
       alt="avatar"
       className="w-10 h-10 rounded-full"
