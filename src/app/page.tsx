@@ -3,9 +3,23 @@ import { Line } from "@/components/line";
 import Avatar1Image from "@/assets/images/avatars/avatar-1.png";
 import Avatar2Image from "@/assets/images/avatars/avatar-2.png";
 import Avatar3Image from "@/assets/images/avatars/avatar-3.png";
-import { Input } from "@/components/input";
 import { Form } from "@/components/game-form";
 import { revalidatePath } from "next/cache";
+import clientPromise from "@/lib/mongodb";
+
+async function checkData() {
+  const client = await clientPromise;
+  const db = client.db('story-weaver');
+  const data = await db.collection("story-weaver").findOne({});
+  return (data as any).story;
+}
+
+checkData().then(data=>{
+  console.log('**************************************');
+  console.log(data);
+  console.log(JSON.parse(JSON.stringify(data)));
+  console.log('***************************************');
+})
 
 const list = [
   {
