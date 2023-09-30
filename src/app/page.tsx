@@ -1,13 +1,10 @@
 import { Avatar } from "@/components/avatar";
 import { Line } from "@/components/line";
 import Avatar1Image from "@/assets/images/avatars/avatar-1.png";
-import Avatar2Image from "@/assets/images/avatars/avatar-2.png";
-import Avatar3Image from "@/assets/images/avatars/avatar-3.png";
-import { Input } from "@/components/input";
+
 import { Form } from "@/components/game-form";
 import { revalidatePath } from "next/cache";
 import {getMockData} from "@/firebase/initFireBase";
-import {after} from "node:test";
 
 
 export  default async function Home() {
