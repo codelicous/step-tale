@@ -6,36 +6,19 @@ import Avatar3Image from "@/assets/images/avatars/avatar-3.png";
 import { Input } from "@/components/input";
 import { Form } from "@/components/game-form";
 import { revalidatePath } from "next/cache";
+import {getMockData} from "@/firebase/initFireBase";
+import {after} from "node:test";
 
-const list = [
-  {
-    user: {
-      name: "first user",
-      avatar: Avatar1Image,
-    },
-    text: "a",
-  },
-  {
-    user: {
-      name: "second user",
-      avatar: Avatar2Image,
-    },
-    text: "b",
-  },
-  {
-    user: {
-      name: "third user",
-      avatar: Avatar3Image,
-    },
-    text: "c",
-  },
-];
 
-export default function Home() {
+export  default async function Home() {
+  const data = await getMockData()
+  const list = data[0].list
+
   async function add(formData: FormData) {
+
     "use server";
     for (const entry of formData.values()) {
-      console.log(entry);
+      console.log(entry)
     }
 
     const val = formData.get("text");
@@ -62,7 +45,6 @@ export default function Home() {
                   <div className="pr-3 border-r border-gray-100">
                     <Avatar src={user.avatar} />
                   </div>
-
                   {text}
                 </div>
               </Line>
