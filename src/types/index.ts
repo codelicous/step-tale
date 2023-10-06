@@ -2,23 +2,27 @@ type Entity = {
   id: string;
 };
 
-type EntityWithName = Entity & {
+type Name = {
   name: string;
 };
+
+export type User = Entity & Name;
+export type GameStatus = "waiting" | "playing" | "finished";
 
 export type GameUsers = Entity & {
   gameId: string;
   userIdList: string[];
 };
 
-export type User = EntityWithName & {
-  //email: string;
+export type Game = {
+  id: string;
+  name: string;
+  status: GameStatus;
 };
 
-export type Game = EntityWithName & {
-  rulesId: string; // Can be list of rules?
-};
-
-export type GameRules = Entity & {
-  sentencePerGame: number;
+export type Entry = Entity & {
+  gameId: string;
+  userId: string;
+  content: string;
+  timestamp: number;
 };
