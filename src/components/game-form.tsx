@@ -3,8 +3,8 @@ export function Form(props: any) {
   return (
     <form action={props.action} className="flex w-full">
       <input
-        id="text"
-        name="text"
+        id="content"
+        name="content"
         autoFocus={true}
         placeholder="Type here..."
         className="w-full p-2 border border-gray-400 rounded rounded-r-none border-r-0  outline-none"

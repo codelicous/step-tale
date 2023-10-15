@@ -6,8 +6,11 @@ type Name = {
   name: string;
 };
 
-export type User = Entity & Name;
-export type GameStatus = "waiting" | "playing" | "finished";
+export type User = Entity &
+  Name & {
+    avatar: string;
+  };
+export type GameStatus = "waiting" | "active" | "finished";
 
 export type GameUsers = Entity & {
   gameId: string;
