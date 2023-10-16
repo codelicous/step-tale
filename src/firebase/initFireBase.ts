@@ -15,6 +15,7 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
 export async function getMockData() {
+    "use server";
     const  snapshot = await getDocs(collection(db, 'test-data'));
 
     return  snapshot.docs.map(doc => doc.data());
