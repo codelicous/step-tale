@@ -2,6 +2,7 @@ import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
 
 export function Avatar({ src }: { src: string | StaticImport }) {
+  "use server";
   return (
     <Image
       width={40}
