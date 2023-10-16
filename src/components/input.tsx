@@ -1,6 +1,5 @@
 //TODO: add label
 export function Input() {
-  "use server";
   return (
     <input
       autoFocus={true}

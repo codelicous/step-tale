@@ -1,6 +1,5 @@
 //TODO: update types
 export function Form(props: any) {
-    "use server";
   return (
     <form action={props.action} className="flex w-full">
       <input

@@ -23,6 +23,7 @@ function mockDataIterator({user, text}: {user: MockUser, text: string} ) {
 }
 
 export  default async function Home() {
+  "use server";
   const data = await getMockData()
   const list = data[0].list
 
