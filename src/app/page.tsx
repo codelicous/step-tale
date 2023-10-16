@@ -1,13 +1,23 @@
-import { Avatar } from "@/components/avatar";
-import { Line } from "@/components/line";
 import Avatar1Image from "@/assets/images/avatars/avatar-1.png";
 import Avatar2Image from "@/assets/images/avatars/avatar-2.png";
 import Avatar3Image from "@/assets/images/avatars/avatar-3.png";
-import { Input } from "@/components/input";
+import { Avatar } from "@/components/avatar";
 import { Form } from "@/components/game-form";
+import { Line } from "@/components/line";
+import { Entry, Game as GameComp, User } from "@/types";
 import { revalidatePath } from "next/cache";
-import { Entry, Game, Game as GameComp, User } from "@/types";
-import { StaticImageData } from "next/image";
+
+const keyBy = <T extends Record<string, any>, K extends keyof T>(
+  arr: T[],
+  key: K
+) =>
+  arr.reduce(
+    (acc, item) => {
+      acc[item[key]] = item;
+      return acc;
+    },
+    {} as Record<string, T>
+  );
 
 const game: GameComp = {
   id: "1",
@@ -77,24 +87,16 @@ const getEntries = async () => {
 };
 
 const getGameData = async () => {
-  const usersMap = (await getUsers()).reduce(
-    (acc, user) => {
-      acc[user.id] = user;
-      return acc;
-    },
-    {} as Record<string, User>
-  );
-  const entries = await getEntries();
+  const usersRecord = keyBy(await getUsers(), "id");
+  const entries = (await getEntries()).map((entry) => ({
+    ...entry,
+    user: usersRecord[entry.userId],
+    avatar: images[usersRecord[entry.userId].avatar as keyof typeof images],
+  }));
 
   return {
     game,
-    entries: entries.map((entry) => ({
-      ...entry,
-      user: {
-        ...usersMap[entry.userId],
-        avatar: images[usersMap[entry.userId].avatar as keyof typeof images],
-      },
-    })),
+    entries,
   };
 };
 
@@ -151,9 +153,6 @@ async function GameComp({ user }: { user: User }) {
   const { game, entries } = await getGameData();
   async function add(formData: FormData) {
     "use server";
-    for (const entry of formData.values()) {
-      console.log(entry);
-    }
 
     const content = formData.get("content");
     const entry: Entry = {
