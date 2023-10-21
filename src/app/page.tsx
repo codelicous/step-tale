@@ -89,10 +89,6 @@ const entries: Entry[] = [
     timestamp: 1697363924859,
   },
 ];
-export  default async function Home() {
-  "use server";
-  const data = await getMockData()
-  const list = data[0].list
 
 function addEntry(entry: Entry) {
   entries.push(entry);
@@ -173,11 +169,10 @@ async function ChooseUser() {
 async function GameComp({ user }: { user: User }) {
   const { game, entries } = await getGameData();
   async function add(formData: FormData) {
-
     "use server";
-    for (const entry of formData.values()) {
-      console.log(entry)
-    }
+    // for (const entry of formData.values()) {
+    //   console.log(entry)
+    // }
 
     const content = formData.get("content");
     const entry: Entry = {
@@ -192,15 +187,6 @@ async function GameComp({ user }: { user: User }) {
     revalidatePath("/");
   }
   return (
-    <main className="flex flex-col justify-center">
-      <h1 className="text-6xl bold text-center">Step Tale</h1>
-      <div className="flex justify-center">
-        <div className="w-1/3 pt-10 flex flex-col gap-1">
-          {list.map(mockDataIterator)}
-          <Form action={add} />
-        </div>
-      </div>
-    </main>
     <div className="w-1/3 pt-10 flex flex-col gap-1">
       {entries.map(({ user, content, id }, i) => {
         return (
