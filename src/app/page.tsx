@@ -4,9 +4,11 @@ import Avatar3Image from "@/assets/images/avatars/avatar-3.png";
 import { Avatar } from "@/components/avatar";
 import { Form } from "@/components/game-form";
 import { Line } from "@/components/line";
-import { Entry, Game as GameComp, User } from "@/types";
+import {DisplayEntry, Entry, Game as GameComp, User} from "@/types";
 import { revalidatePath } from "next/cache";
-import {getMockData} from "@/firebase/initFireBase";
+import {addEntryAndRefreshData, getEntries, getUsers} from "@/firebase/firebase-util";
+import {StaticImageData} from "next/image";
+
 export interface MockUser {
   avatar: string;
   name: string;
@@ -42,79 +44,40 @@ const game: GameComp = {
   status: "active",
 };
 
-const images = {
+const images: Record<string, StaticImageData> = {
   avatar1: Avatar1Image,
   avatar2: Avatar2Image,
   avatar3: Avatar3Image,
 };
 
-const users: User[] = [
-  {
-    id: "1",
-    name: "first user",
-    avatar: "avatar1",
-  },
-  {
-    id: "2",
-    name: "second user",
-    avatar: "avatar2",
-  },
-  {
-    id: "3",
-    name: "third user",
-    avatar: "avatar3",
-  },
-];
+const users: User[] = await getUsers() as any;
 
-const entries: Entry[] = [
-  {
-    id: "1",
-    userId: "1",
-    gameId: "1",
-    content: "first entry",
-    timestamp: 1697363827652,
-  },
-  {
-    id: "2",
-    userId: "2",
-    gameId: "1",
-    content: "second entry",
-    timestamp: 1697363913686,
-  },
-  {
-    id: "3",
-    userId: "3",
-    gameId: "1",
-    content: "third entry",
-    timestamp: 1697363924859,
-  },
-];
+const entries: Entry[] = await getEntries();
 
 function addEntry(entry: Entry) {
   entries.push(entry);
+  console.log(entries);
   return Promise.resolve("");
 }
 
-const getUsers = async () => {
-  return Promise.resolve(users);
-};
 
-const getEntries = async () => {
-  return Promise.resolve(entries);
-};
 
-const getGameData = async () => {
+const getGameData = async (): Promise<{entries: DisplayEntry[], game: GameComp}> => {
   const usersRecord = keyBy(await getUsers(), "id");
-  const entries = (await getEntries()).map((entry) => ({
+  const entries =(await getEntries()).map((entry) => ({
     ...entry,
-    user: usersRecord[entry.userId],
-    avatar: images[usersRecord[entry.userId].avatar as keyof typeof images],
+    user: {
+      ...usersRecord[entry.userId],
+    avatarImage: images[usersRecord[entry.userId].avatar ]},
+
   }));
 
   return {
-    game,
     entries,
-  };
+    game
+}
+
+
 };
 
 let CurrentUserId: User["id"] | null;
@@ -167,12 +130,9 @@ async function ChooseUser() {
 }
 
 async function GameComp({ user }: { user: User }) {
-  const { game, entries } = await getGameData();
+  let { game, entries } = await getGameData();
   async function add(formData: FormData) {
     "use server";
-    // for (const entry of formData.values()) {
-    //   console.log(entry)
-    // }
 
     const content = formData.get("content");
     const entry: Entry = {
@@ -183,7 +143,7 @@ async function GameComp({ user }: { user: User }) {
       timestamp: Date.now(),
     };
 
-    await addEntry(entry);
+    entries = addEntryAndRefreshData(entry)
     revalidatePath("/");
   }
   return (
