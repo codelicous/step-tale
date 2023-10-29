@@ -8,6 +8,7 @@ import {DisplayEntry, Entry, Game as GameComp, User} from "@/types";
 import { revalidatePath } from "next/cache";
 import {addEntryAndRefreshData, getEntries, getUsers} from "@/firebase/firebase-util";
 import {StaticImageData} from "next/image";
+import entry from "next/dist/server/typescript/rules/entry";
 
 export interface MockUser {
   avatar: string;
@@ -52,16 +53,6 @@ const images: Record<string, StaticImageData> = {
 
 const users: User[] = await getUsers() as any;
 
-const entries: Entry[] = await getEntries();
-
-function addEntry(entry: Entry) {
-  entries.push(entry);
-  console.log(entries);
-  return Promise.resolve("");
-}
-
-
-
 const getGameData = async (): Promise<{entries: DisplayEntry[], game: GameComp}> => {
   const usersRecord = keyBy(await getUsers(), "id");
   const entries =(await getEntries()).map((entry) => ({
@@ -79,6 +70,25 @@ const getGameData = async (): Promise<{entries: DisplayEntry[], game: GameComp}>
 
 
 };
+async function getUsersRecord(): Promise<Record<string, User>> {
+    return keyBy(await getUsers(), "id");
+}
+export async function getDisplayEntries() {
+    const usersRecord = await getUsersRecord();
+    const entries = await  getEntries();
+
+    return composeEntries(entries, usersRecord);
+}
+
+export function composeEntries(entries: Entry[], usersRecord: Record<string, User>) {
+    return entries.map(entry => ({
+        ...entry,
+        user: {
+            ...usersRecord[entry.userId],
+            avatarImage: images[usersRecord[entry.userId].avatar ]},
+
+    }));
+}
 
 let CurrentUserId: User["id"] | null;
 
@@ -142,8 +152,10 @@ async function GameComp({ user }: { user: User }) {
       content: content as string,
       timestamp: Date.now(),
     };
+      const rawEntries = await addEntryAndRefreshData(entry)
+      const usersRecord = await getUsersRecord();
 
-    entries = addEntryAndRefreshData(entry)
+      entries = composeEntries(rawEntries,usersRecord);
     revalidatePath("/");
   }
   return (
@@ -153,7 +165,7 @@ async function GameComp({ user }: { user: User }) {
           <Line key={id}>
             <div className="flex gap-1 items-center">
               <div className="pr-3 border-r border-gray-100">
-                <Avatar src={user.avatar} />
+                <Avatar src={user.avatarImage} />
               </div>
               {content}
             </div>

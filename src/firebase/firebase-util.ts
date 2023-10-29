@@ -1,6 +1,6 @@
 import {initializeApp} from "@firebase/app";
 import {addDoc, collection, DocumentData, getDocs, getFirestore, QuerySnapshot} from "@firebase/firestore";
-import {Entry, User} from "@/types";
+import {DisplayEntry, Entry, User} from "@/types";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
