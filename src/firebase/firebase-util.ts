@@ -1,6 +1,13 @@
 import {initializeApp} from "@firebase/app";
-import {addDoc, collection, DocumentData, getDocs, getFirestore, QuerySnapshot} from "@firebase/firestore";
-import {DisplayEntry, Entry, User} from "@/types";
+import {collection,
+        getDocs,
+        getFirestore,
+        QuerySnapshot,
+        updateDoc,
+        doc,
+        arrayUnion } from "@firebase/firestore";
+import { Entry, User} from "@/types";
+
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -25,6 +32,8 @@ export async function getData(): Promise<any> {
         throw e
     }
  }
+
+const docId = (await getDocs(dbRef()) as any).docs[0].id
 export async function getUsers(): Promise<User[]> {
     "use server";
 
@@ -39,14 +48,18 @@ export async function getEntries(): Promise<Entry[]> {
     }
 }
 
-export async function addEntry(entry: Entry): Promise<string> {
-    try {
-        const entryRef = await addDoc(dbRef(), entry)
-        return entry.id;
-    } catch (e) {
-        console.log(e);
-        throw e;
-    }
+export async function addEntry(entry: Entry): Promise<void> {
+    // Get a reference to the story-weaver document.
+    const storyWeaverRef = doc(db, 'story-weaver', docId)
+
+// Create an update object with the array field value that you want to update.
+    const update = {
+        entries: arrayUnion(entry),
+    };
+
+// Update the document.
+   await updateDoc(storyWeaverRef, update);
+
 }
 export async function addEntryAndRefreshData(entry:Entry): Promise<Entry[]> {
     await addEntry(entry);

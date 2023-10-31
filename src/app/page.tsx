@@ -8,24 +8,6 @@ import {DisplayEntry, Entry, Game as GameComp, User} from "@/types";
 import { revalidatePath } from "next/cache";
 import {addEntryAndRefreshData, getEntries, getUsers} from "@/firebase/firebase-util";
 import {StaticImageData} from "next/image";
-import entry from "next/dist/server/typescript/rules/entry";
-
-export interface MockUser {
-  avatar: string;
-  name: string;
-}
-function mockDataIterator({user, text}: {user: MockUser, text: string} ) {
-   return (
-      <Line key={text}>
-        <div className="flex gap-1 items-center">
-          <div className="pr-3 border-r border-gray-100">
-            <Avatar src={user.avatar} />
-          </div>
-          {text}
-        </div>
-      </Line>
-  );
-}
 
 const keyBy = <T extends Record<string, any>, K extends keyof T>(
   arr: T[],
@@ -152,15 +134,13 @@ async function GameComp({ user }: { user: User }) {
       content: content as string,
       timestamp: Date.now(),
     };
-      const rawEntries = await addEntryAndRefreshData(entry)
-      const usersRecord = await getUsersRecord();
+      await addEntryAndRefreshData(entry)
 
-      entries = composeEntries(rawEntries,usersRecord);
     revalidatePath("/");
   }
   return (
     <div className="w-1/3 pt-10 flex flex-col gap-1">
-      {entries.map(({ user, content, id }, i) => {
+      {entries.map(({ user, content, id }) => {
         return (
           <Line key={id}>
             <div className="flex gap-1 items-center">
