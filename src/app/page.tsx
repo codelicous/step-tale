@@ -36,14 +36,8 @@ const images: Record<string, StaticImageData> = {
 const users: User[] = await getUsers() as any;
 
 const getGameData = async (): Promise<{entries: DisplayEntry[], game: GameComp}> => {
-  const usersRecord = keyBy(await getUsers(), "id");
-  const entries =(await getEntries()).map((entry) => ({
-    ...entry,
-    user: {
-      ...usersRecord[entry.userId],
-    avatarImage: images[usersRecord[entry.userId].avatar ]},
-
-  }));
+  const usersRecord = await getUsersRecord();
+  const entries = await  getDisplayEntries()
 
   return {
     entries,
@@ -55,14 +49,14 @@ const getGameData = async (): Promise<{entries: DisplayEntry[], game: GameComp}>
 async function getUsersRecord(): Promise<Record<string, User>> {
     return keyBy(await getUsers(), "id");
 }
-export async function getDisplayEntries() {
+ async function getDisplayEntries() {
     const usersRecord = await getUsersRecord();
     const entries = await  getEntries();
 
     return composeEntries(entries, usersRecord);
 }
 
-export function composeEntries(entries: Entry[], usersRecord: Record<string, User>) {
+ function composeEntries(entries: Entry[], usersRecord: Record<string, User>) {
     return entries.map(entry => ({
         ...entry,
         user: {
