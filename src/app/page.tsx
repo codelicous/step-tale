@@ -106,8 +106,10 @@ const getGameData = async () => {
   const usersRecord = keyBy(await getUsers(), "id");
   const entries = (await getEntries()).map((entry) => ({
     ...entry,
-    user: usersRecord[entry.userId],
-    avatar: images[usersRecord[entry.userId].avatar as keyof typeof images],
+    user: {
+      ...usersRecord[entry.userId],
+      avatar: images[usersRecord[entry.userId].avatar as keyof typeof images],
+    },
   }));
 
   return {
@@ -187,12 +189,12 @@ async function GameComp({ user }: { user: User }) {
   }
   return (
     <div className="w-1/3 pt-10 flex flex-col gap-1">
-      {entries.map(({ user, content, avatar, id }, i) => {
+      {entries.map(({ user, content, id }, i) => {
         return (
           <Line key={id}>
             <div className="flex gap-1 items-center">
               <div className="pr-3 border-r border-gray-100">
-                <Avatar src={avatar} />
+                <Avatar src={user.avatar} />
               </div>
               {content}
             </div>
