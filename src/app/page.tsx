@@ -4,8 +4,10 @@ import Avatar3Image from "@/assets/images/avatars/avatar-3.png";
 import { Avatar } from "@/components/avatar";
 import { Form } from "@/components/game-form";
 import { Line } from "@/components/line";
-import { Entry, Game as GameComp, User } from "@/types";
+import {DisplayEntry, Entry, Game as GameComp, User} from "@/types";
 import { revalidatePath } from "next/cache";
+import {addEntryAndRefreshData, getEntries, getUsers} from "@/firebase/firebase-util";
+import {StaticImageData} from "next/image";
 
 const keyBy = <T extends Record<string, any>, K extends keyof T>(
   arr: T[],
@@ -25,80 +27,44 @@ const game: GameComp = {
   status: "active",
 };
 
-const images = {
+const images: Record<string, StaticImageData> = {
   avatar1: Avatar1Image,
   avatar2: Avatar2Image,
   avatar3: Avatar3Image,
 };
 
-const users: User[] = [
-  {
-    id: "1",
-    name: "first user",
-    avatar: "avatar1",
-  },
-  {
-    id: "2",
-    name: "second user",
-    avatar: "avatar2",
-  },
-  {
-    id: "3",
-    name: "third user",
-    avatar: "avatar3",
-  },
-];
+const users: User[] = await getUsers() as any;
 
-const entries: Entry[] = [
-  {
-    id: "1",
-    userId: "1",
-    gameId: "1",
-    content: "first entry",
-    timestamp: 1697363827652,
-  },
-  {
-    id: "2",
-    userId: "2",
-    gameId: "1",
-    content: "second entry",
-    timestamp: 1697363913686,
-  },
-  {
-    id: "3",
-    userId: "3",
-    gameId: "1",
-    content: "third entry",
-    timestamp: 1697363924859,
-  },
-];
-
-function addEntry(entry: Entry) {
-  entries.push(entry);
-  return Promise.resolve("");
-}
-
-const getUsers = async () => {
-  return Promise.resolve(users);
-};
-
-const getEntries = async () => {
-  return Promise.resolve(entries);
-};
-
-const getGameData = async () => {
-  const usersRecord = keyBy(await getUsers(), "id");
-  const entries = (await getEntries()).map((entry) => ({
-    ...entry,
-    user: usersRecord[entry.userId],
-    avatar: images[usersRecord[entry.userId].avatar as keyof typeof images],
-  }));
+const getGameData = async (): Promise<{entries: DisplayEntry[], game: GameComp}> => {
+  const usersRecord = await getUsersRecord();
+  const entries = await  getDisplayEntries()
 
   return {
-    game,
     entries,
-  };
+    game
+}
+
+
 };
+async function getUsersRecord(): Promise<Record<string, User>> {
+    return keyBy(await getUsers(), "id");
+}
+ async function getDisplayEntries() {
+    const usersRecord = await getUsersRecord();
+    const entries = await  getEntries();
+
+    return composeEntries(entries, usersRecord);
+}
+
+ function composeEntries(entries: Entry[], usersRecord: Record<string, User>) {
+    return entries.map(entry => ({
+        ...entry,
+        user: {
+            ...usersRecord[entry.userId],
+            avatarImage: images[usersRecord[entry.userId].avatar ]},
+
+    }));
+}
 
 let CurrentUserId: User["id"] | null;
 
@@ -150,7 +116,7 @@ async function ChooseUser() {
 }
 
 async function GameComp({ user }: { user: User }) {
-  const { game, entries } = await getGameData();
+  let { game, entries } = await getGameData();
   async function add(formData: FormData) {
     "use server";
 
@@ -162,18 +128,18 @@ async function GameComp({ user }: { user: User }) {
       content: content as string,
       timestamp: Date.now(),
     };
+      await addEntryAndRefreshData(entry)
 
-    await addEntry(entry);
     revalidatePath("/");
   }
   return (
     <div className="w-1/3 pt-10 flex flex-col gap-1">
-      {entries.map(({ user, content, id }, i) => {
+      {entries.map(({ user, content, id }) => {
         return (
           <Line key={id}>
             <div className="flex gap-1 items-center">
               <div className="pr-3 border-r border-gray-100">
-                <Avatar src={user.avatar} />
+                <Avatar src={user.avatarImage} />
               </div>
               {content}
             </div>
