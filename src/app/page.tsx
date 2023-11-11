@@ -6,21 +6,20 @@ import { Form } from "@/components/game-form";
 import { Line } from "@/components/line";
 import { Entry, Game as GameComp, User } from "@/types";
 import { revalidatePath } from "next/cache";
-import {getMockData} from "@/firebase/initFireBase";
 export interface MockUser {
   avatar: string;
   name: string;
 }
-function mockDataIterator({user, text}: {user: MockUser, text: string} ) {
-   return (
-      <Line key={text}>
-        <div className="flex gap-1 items-center">
-          <div className="pr-3 border-r border-gray-100">
-            <Avatar src={user.avatar} />
-          </div>
-          {text}
+function mockDataIterator({ user, text }: { user: MockUser; text: string }) {
+  return (
+    <Line key={text}>
+      <div className="flex gap-1 items-center">
+        <div className="pr-3 border-r border-gray-100">
+          <Avatar src={user.avatar} />
         </div>
-      </Line>
+        {text}
+      </div>
+    </Line>
   );
 }
 
@@ -188,12 +187,12 @@ async function GameComp({ user }: { user: User }) {
   }
   return (
     <div className="w-1/3 pt-10 flex flex-col gap-1">
-      {entries.map(({ user, content, id }, i) => {
+      {entries.map(({ user, content, avatar, id }, i) => {
         return (
           <Line key={id}>
             <div className="flex gap-1 items-center">
               <div className="pr-3 border-r border-gray-100">
-                <Avatar src={user.avatar} />
+                <Avatar src={avatar} />
               </div>
               {content}
             </div>
