@@ -1,6 +1,6 @@
 import { getUsers } from "@/firebase/firebase-util";
 import { User } from "@/types";
-import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 let CurrentUserId: User["id"] | null;
@@ -31,6 +31,7 @@ async function ChooseUser() {
     const val = FormData.get("user");
     if (typeof val === "string") {
       CurrentUserId = val;
+      cookies().set("user", val);
     }
     redirect("/game");
   }

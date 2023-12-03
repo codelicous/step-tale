@@ -1,14 +1,13 @@
 import { initializeApp } from "@firebase/app";
 import {
   collection,
-  getDocs,
+  getDocs as _getDocs,
   getFirestore,
-  QuerySnapshot,
   updateDoc,
   doc,
   arrayUnion,
 } from "@firebase/firestore";
-import { Entry, User } from "@/types";
+import { Entry, Game, GameUsers, User } from "@/types";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -24,21 +23,27 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const dbRef = () => collection(db, "story-weaver");
+export const getDocs = () => _getDocs(dbRef());
 
-export async function getData(): Promise<any> {
-  let snapshot: QuerySnapshot;
-  try {
-    snapshot = await getDocs(dbRef());
-    return snapshot.docs.map((doc) => doc.data())[0] as any;
-  } catch (e) {
-    throw e;
-  }
-}
+export const getData = () =>
+  getDocs().then((s) => s.docs.map((doc) => doc.data())[0]);
 
-const docId = ((await getDocs(dbRef())) as any).docs[0]?.id;
+export const getUserGames = async (userId: string) => {
+  "use server";
+  const { gameUsers = [], games = [] } = await getData();
+  console.log("data", gameUsers);
+  const userGames = new Set(
+    (gameUsers as GameUsers[])
+      .filter((g) => g.userIdList.includes(userId))
+      .map((g) => g.gameId)
+  );
+  return (games as Game[]).filter((g) => userGames.has(g.id));
+};
+
+const getDocId = async () => (await getDocs()).docs[0]?.id;
+
 export async function getUsers(): Promise<User[]> {
   "use server";
-
   return ((await getData()) as Record<string, any>).users as User[];
 }
 
@@ -52,7 +57,7 @@ export async function getEntries(): Promise<Entry[]> {
 
 export async function addEntry(entry: Entry): Promise<void> {
   // Get a reference to the story-weaver document.
-  const storyWeaverRef = doc(db, "story-weaver", docId);
+  const storyWeaverRef = doc(db, "story-weaver", await getDocId());
 
   // Create an update object with the array field value that you want to update.
   const update = {
