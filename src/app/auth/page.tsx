@@ -35,6 +35,7 @@ async function ChooseUser() {
     }
     redirect("/game");
   }
+  if (users.length === 0) return <p>No users</p>;
   return (
     <form className="flex flex-col gap-2 mt-10" action={choose}>
       <select placeholder="choose user" name="user" id="user" required>

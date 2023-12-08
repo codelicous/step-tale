@@ -1,13 +1,14 @@
+import { User } from "@/types";
 import { initializeApp } from "@firebase/app";
 import {
   collection,
   getDocs as _getDocs,
   getFirestore,
-  updateDoc,
-  doc,
-  arrayUnion,
 } from "@firebase/firestore";
-import { Entry, Game, GameUsers, User } from "@/types";
+import { doc } from "firebase/firestore";
+// import { Entry, Game, GameUsers, User } from "@/types";
+// import { query } from "firebase/database";
+// import { where } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -19,55 +20,63 @@ const firebaseConfig = {
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
 };
 
+const mainCollectionMap = ["games", "story-weaver", "users"].reduce(
+  (acc, k, i) => {
+    acc[k] = i;
+    return acc;
+  },
+  {} as Record<string, number>
+);
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const dbRef = () => collection(db, "story-weaver");
-export const getDocs = () => _getDocs(dbRef());
+const usersRef = () => collection(db, "users");
+const getDocs = () => _getDocs(dbRef());
+const getGamesDocs = () => _getDocs(collection(db, "games"));
+const getUsersDocs = () => _getDocs(usersRef());
 
-export const getData = () =>
-  getDocs().then((s) => s.docs.map((doc) => doc.data())[0]);
+const userQuery = (userId: string) => collection(db, "users");
 
-export const getUserGames = async (userId: string) => {
-  "use server";
-  const { gameUsers = [], games = [] } = await getData();
-  console.log("data", gameUsers);
-  const userGames = new Set(
-    (gameUsers as GameUsers[])
-      .filter((g) => g.userIdList.includes(userId))
-      .map((g) => g.gameId)
-  );
-  return (games as Game[]).filter((g) => userGames.has(g.id));
-};
-
-const getDocId = async () => (await getDocs()).docs[0]?.id;
+// const getDocId = async () => (await getDocs()).docs[0]?.id;
 
 export async function getUsers(): Promise<User[]> {
   "use server";
-  return ((await getData()) as Record<string, any>).users as User[];
+  let data: Record<string, User> = {};
+  const docs = await getUsersDocs();
+
+  docs.forEach((i) => {
+    const d = i.data();
+    console.log(d);
+    data = { ...data, ...d };
+  });
+  console.log(data);
+  return Object.values(data);
 }
 
-export async function getEntries(): Promise<Entry[]> {
-  try {
-    return ((await getData()) as Record<string, any>).entries as Entry[];
-  } catch (e) {
-    throw e;
-  }
+export async function getUser(userId: string): Promise<User | undefined> {
+  console.log("get user", userId);
+
+  ("use server");
+  const docs = (await getUsers()) as unknown as User[];
+  console.log("user docs", docs);
+  return docs.find((u) => u.id === userId);
 }
 
-export async function addEntry(entry: Entry): Promise<void> {
-  // Get a reference to the story-weaver document.
-  const storyWeaverRef = doc(db, "story-weaver", await getDocId());
+// export async function addEntry(entry: Entry): Promise<void> {
+//   // Get a reference to the story-weaver document.
+//   // const storyWeaverRef = doc(db, "story-weaver", await getDocId());
 
-  // Create an update object with the array field value that you want to update.
-  const update = {
-    entries: arrayUnion(entry),
-  };
+//   // // Create an update object with the array field value that you want to update.
+//   // const update = {
+//   //   entries: arrayUnion(entry),
+//   // };
 
-  // Update the document.
-  await updateDoc(storyWeaverRef, update);
-}
-export async function addEntryAndRefreshData(entry: Entry): Promise<Entry[]> {
-  await addEntry(entry);
-  return await getEntries();
-}
+//   // // Update the document.
+//   // await updateDoc(storyWeaverRef, update);
+// }
+// export async function addEntryAndRefreshData(entry: Entry): Promise<Entry[]> {
+//   // await addEntry(entry);
+//   // return await getEntries();
+// }
