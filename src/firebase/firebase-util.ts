@@ -1,4 +1,4 @@
-import { User } from "@/types";
+import { Game, User } from "@/types";
 import { initializeApp } from "@firebase/app";
 import {
   collection,
@@ -32,10 +32,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const dbRef = () => collection(db, "story-weaver");
-const usersRef = () => collection(db, "users");
+const usersColRef = () => collection(db, "users");
+const usersRef = (userId: string) => doc(db, `users/${userId}`);
 const getDocs = () => _getDocs(dbRef());
 const getGamesDocs = () => _getDocs(collection(db, "games"));
-const getUsersDocs = () => _getDocs(usersRef());
+const getUsersDocs = () => _getDocs(usersColRef());
 
 const userQuery = (userId: string) => collection(db, "users");
 
@@ -43,16 +44,17 @@ const userQuery = (userId: string) => collection(db, "users");
 
 export async function getUsers(): Promise<User[]> {
   "use server";
-  let data: Record<string, User> = {};
-  const docs = await getUsersDocs();
 
-  docs.forEach((i) => {
-    const d = i.data();
-    console.log(d);
-    data = { ...data, ...d };
-  });
-  console.log(data);
-  return Object.values(data);
+  const userData = await getUsersDocs();
+  return userData.docs
+    .map((doc) => {
+      const d = doc.data();
+      console.log("user id", doc.id);
+      console.log("user games", doc.ref);
+      console.log("user data", d);
+      return { ...d, id: doc.id, games: [] as Game[] } as User;
+    })
+    .reverse();
 }
 
 export async function getUser(userId: string): Promise<User | undefined> {

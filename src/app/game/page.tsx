@@ -2,13 +2,14 @@ import { getUser } from "@/firebase/firebase-util";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
-const { value } = cookies().get("user") as unknown as {
-  name: string;
-  value: string;
-};
 //TODO: add game list
 export default async function ChooseGamePage() {
-  const user = await getUser(value);
+  const userData = cookies().get("user") as unknown as {
+    name: string;
+    value: string;
+  };
+  console.log(userData);
+  const user = await getUser(userData.value);
   if (!user) return <p>no user</p>;
 
   const games = user.games;

@@ -11,7 +11,7 @@ type Name = {
 export type User = Entity &
   Name & {
     avatar?: string;
-    games: Partial<Game>[];
+    games?: Partial<Game>[];
   };
 export type DisplayUser = User & {
   avatarImage: StaticImageData;

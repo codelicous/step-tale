@@ -29,11 +29,12 @@ async function ChooseUser() {
   async function choose(FormData: FormData) {
     "use server";
     const val = FormData.get("user");
+    console.log(val);
     if (typeof val === "string") {
       CurrentUserId = val;
       cookies().set("user", val);
+      redirect("/game");
     }
-    redirect("/game");
   }
   if (users.length === 0) return <p>No users</p>;
   return (
