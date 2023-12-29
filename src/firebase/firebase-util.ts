@@ -67,7 +67,10 @@ export async function getGame(gameId: string): Promise<Game | undefined> {
         game.users
           //@ts-expect-error
           .map(async (u) => await getDoc(u))
-          .map(async (u) => (await u).data())
+          .map(async (u) => {
+            const data = (await u).data() as Partial<User>;
+            return { ...data, id: (await u).id } as User;
+          })
       )) as User[],
     }
   );
