@@ -5,7 +5,7 @@ import {
   getDocs as _getDocs,
   getFirestore,
 } from "@firebase/firestore";
-import { doc } from "firebase/firestore";
+import { DocumentReference, doc, getDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -53,16 +53,30 @@ export async function getGames(): Promise<Game[]> {
 }
 
 export async function getGame(gameId: string): Promise<Game | undefined> {
-  "use server";
   console.log("gameId", gameId);
-  const docs = (await getGames()) as unknown as Game[];
+  const docs = (await getGames()) as unknown as Array<
+    Game & { users: DocumentReference<User>[] }
+  >;
   console.log("game docs", docs);
+  const game = docs.find((g) => g.id === gameId);
+
   return (
-    docs.find((g) => g.id === gameId) ||
-    ({
-      id: "not found",
-    } as Game)
+    game && {
+      ...game,
+      users: (await Promise.all(
+        game.users
+          //@ts-expect-error
+          .map(async (u) => await getDoc(u))
+          .map(async (u) => (await u).data())
+      )) as User[],
+    }
   );
+}
+
+export async function getGameEntries(gameId: string): Promise<Game[]> {
+  "use server";
+  const docs = (await getGames()) as unknown as Game[];
+  return docs.filter((g) => g.id === gameId);
 }
 
 export async function getUsers(): Promise<User[]> {

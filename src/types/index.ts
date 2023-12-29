@@ -1,3 +1,4 @@
+import { DocumentReference } from "firebase/firestore";
 import { StaticImageData } from "next/image";
 
 type Entity = {
@@ -27,6 +28,8 @@ export type Game = {
   id: string;
   name: string;
   status: GameStatus;
+  entries: Entry[];
+  users: User[];
 };
 
 export type Entry = Entity & {
