@@ -23,13 +23,13 @@ export default async function ChooseGamePage() {
 
   return (
     <div>
-      {games.length === 0 && <p>No games</p>}
-      {games.length > 0 && (
+      {games && games.length === 0 && <p>No games</p>}
+      {(games || []).length > 0 && (
         <>
           <h1>choose game</h1>
           <form action={choose}>
             <select placeholder="choose game" name="game" id="game" required>
-              {games.map((game) => (
+              {games!.map((game) => (
                 <option key={game.id} value={game.id}>
                   {game.name}
                 </option>
