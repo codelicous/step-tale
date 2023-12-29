@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 
 let CurrentUserId: User["id"] | null;
 
-
 export default async function Auth() {
   return (
     <main className="flex flex-col justify-center">
@@ -29,10 +28,10 @@ async function ChooseUser() {
       redirect("/game");
     }
   }
-  if (users.length === 0) return <p>No users</p>;
+  if ((users || []).length === 0) return <p>No users</p>;
   return (
     <form className="flex flex-col gap-2 mt-10" action={choose}>
-      <select placeholder="choose user" name="user" id="user" required>
+      <select name="user" id="user" required>
         {users.map((user) => (
           <option key={user.id} value={user.id}>
             {user.name}

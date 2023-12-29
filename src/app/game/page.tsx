@@ -28,7 +28,7 @@ export default async function ChooseGamePage() {
         <>
           <h1>choose game</h1>
           <form action={choose}>
-            <select placeholder="choose game" name="game" id="game" required>
+            <select name="game" id="game" required>
               {games!.map((game) => (
                 <option key={game.id} value={game.id}>
                   {game.name}
