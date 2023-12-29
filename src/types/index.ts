@@ -1,4 +1,4 @@
-import {StaticImageData} from "next/image";
+import { StaticImageData } from "next/image";
 
 type Entity = {
   id: string;
@@ -10,11 +10,12 @@ type Name = {
 
 export type User = Entity &
   Name & {
-    avatar: string;
+    avatar?: string;
+    games?: Partial<Game>[];
   };
 export type DisplayUser = User & {
   avatarImage: StaticImageData;
-}
+};
 export type GameStatus = "waiting" | "active" | "finished";
 
 export type GameUsers = Entity & {
@@ -35,5 +36,5 @@ export type Entry = Entity & {
   timestamp: number;
 };
 export type DisplayEntry = Entry & {
-  user: DisplayUser
-}
+  user: DisplayUser;
+};
