@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 const user = cookies().get("user");
 
 export default async function Home() {
+  console.log(user);
   if (!user) {
     redirect("/auth");
   } else {

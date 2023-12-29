@@ -5,15 +5,8 @@ import { redirect } from "next/navigation";
 
 let CurrentUserId: User["id"] | null;
 
-const getUser = async () => {
-  const user = CurrentUserId
-    ? (await getUsers()).find((u) => u.id === CurrentUserId)
-    : null;
-  return Promise.resolve(user);
-};
 
 export default async function Auth() {
-  const user = await getUser();
   return (
     <main className="flex flex-col justify-center">
       <h1 className="text-6xl bold text-center">Step Tale</h1>

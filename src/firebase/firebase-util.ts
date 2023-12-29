@@ -32,6 +32,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const dbRef = () => collection(db, "story-weaver");
+const userGamesRef = (userRef) => collection(userRef, "games");
 const usersColRef = () => collection(db, "users");
 const usersRef = (userId: string) => doc(db, `users/${userId}`);
 const getDocs = () => _getDocs(dbRef());
@@ -52,7 +53,7 @@ export async function getUsers(): Promise<User[]> {
       console.log("user id", doc.id);
       console.log("user games", doc.ref);
       console.log("user data", d);
-      return { ...d, id: doc.id, games: [] as Game[] } as User;
+      return { ...d, id: doc.id } as User;
     })
     .reverse();
 }

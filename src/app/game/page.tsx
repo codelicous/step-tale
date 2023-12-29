@@ -9,7 +9,8 @@ export default async function ChooseGamePage() {
     value: string;
   };
   console.log(userData);
-  const user = await getUser(userData.value);
+  if (!userData) return redirect("/auth");
+  const user = await getUser(userData?.value);
   if (!user) return <p>no user</p>;
 
   const games = user.games;
