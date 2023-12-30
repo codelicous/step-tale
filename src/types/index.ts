@@ -1,4 +1,3 @@
-import { DocumentReference } from "firebase/firestore";
 import { StaticImageData } from "next/image";
 
 type Entity = {
@@ -36,7 +35,7 @@ export type Entry = Entity & {
   gameId: string;
   userId: string;
   content: string;
-  timestamp: number;
+  createdAt: number;
 };
 export type DisplayEntry = Entry & {
   user: DisplayUser;

@@ -1,11 +1,15 @@
-import { Game, User } from "@/types";
+import {Entry, Game, User} from "@/types";
 import { initializeApp } from "@firebase/app";
 import {
-  collection,
-  getDocs as _getDocs,
-  getFirestore,
+    collection,
+    doc,
+    getDocs as _getDocs,
+    getFirestore,
+    updateDoc,
 } from "@firebase/firestore";
 import { DocumentReference, getDoc } from "firebase/firestore";
+import { arrayUnion } from "firebase/firestore";
+
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -81,4 +85,13 @@ export async function getUser(userId: string): Promise<User | undefined> {
   const docs = (await getUsers()) as unknown as User[];
   console.log("user docs", docs);
   return docs.find((u) => u.id === userId);
+}
+
+export async function insertEntry(entry: Entry, gameDocRef: string) {
+        try {
+            const gameDoc =doc(db, 'games', gameDocRef);
+            await updateDoc(gameDoc, { entries: arrayUnion(entry)})
+        }catch (err) {
+            console.log(err)
+        }
 }
