@@ -5,7 +5,7 @@ import {
   getDocs as _getDocs,
   getFirestore,
 } from "@firebase/firestore";
-import { DocumentReference, doc, getDoc } from "firebase/firestore";
+import { DocumentReference, getDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -17,29 +17,13 @@ const firebaseConfig = {
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
 };
 
-const mainCollectionMap = ["games", "story-weaver", "users"].reduce(
-  (acc, k, i) => {
-    acc[k] = i;
-    return acc;
-  },
-  {} as Record<string, number>
-);
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// const dbRef = () => collection(db, "story-weaver");
-// const userGamesRef = (userRef) => collection(userRef, "games");
 const usersColRef = () => collection(db, "users");
 export const gamesColRef = () => collection(db, "games");
 const getGameDocs = () => _getDocs(gamesColRef());
-// const usersRef = (userId: string) => doc(db, `users/${userId}`);
-// const getDocs = () => _getDocs(dbRef());
-// const getGamesDocs = () => _getDocs(collection(db, "games"));
 const getUsersDocs = () => _getDocs(usersColRef());
-
-const userQuery = (userId: string) => collection(db, "users");
-
 export async function getGames(): Promise<Game[]> {
   "use server";
   console.log("getGames");
@@ -84,7 +68,7 @@ export async function getGameEntries(gameId: string): Promise<Game[]> {
 
 export async function getUsers(): Promise<User[]> {
   "use server";
-
+    console.log('here');
   const userData = await getUsersDocs();
   return userData.docs
     .map((doc) => {
