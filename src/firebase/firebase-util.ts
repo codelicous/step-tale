@@ -25,7 +25,6 @@ export const gamesColRef = () => collection(db, "games");
 const getGameDocs = () => _getDocs(gamesColRef());
 const getUsersDocs = () => _getDocs(usersColRef());
 export async function getGames(): Promise<Game[]> {
-  "use server";
   console.log("getGames");
   const gameData = await getGameDocs();
   return gameData.docs
@@ -61,14 +60,11 @@ export async function getGame(gameId: string): Promise<Game | undefined> {
 }
 
 export async function getGameEntries(gameId: string): Promise<Game[]> {
-  "use server";
   const docs = (await getGames()) as unknown as Game[];
   return docs.filter((g) => g.id === gameId);
 }
 
 export async function getUsers(): Promise<User[]> {
-  "use server";
-
   const userData = await getUsersDocs();
   return userData.docs
     .map((doc) => {
@@ -82,7 +78,6 @@ export async function getUsers(): Promise<User[]> {
 }
 
 export async function getUser(userId: string): Promise<User | undefined> {
-  "use server";
   const docs = (await getUsers()) as unknown as User[];
   console.log("user docs", docs);
   return docs.find((u) => u.id === userId);
