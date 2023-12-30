@@ -68,7 +68,7 @@ export async function getGameEntries(gameId: string): Promise<Game[]> {
 
 export async function getUsers(): Promise<User[]> {
   "use server";
-    console.log('here');
+
   const userData = await getUsersDocs();
   return userData.docs
     .map((doc) => {
