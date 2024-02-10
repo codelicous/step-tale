@@ -1,11 +1,17 @@
 "use client";
-
 import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import { Entry, User } from "@/types";
+import {
+  getEntriesSnapshot,
+  getGame,
+  getGameEntries,
+} from "@/firebase/firebase-util";
+import { Entry, Game, User } from "@/types";
+import { onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
 
 export function GameComponent({
   entries,
@@ -16,6 +22,15 @@ export function GameComponent({
   entries: Entry[];
   users: User[];
 }) {
+  const [gameEntires, setGameEntries] = useState(entries);
+
+  useEffect(() => {
+    const unsubscribe = getEntriesSnapshot((snapshot) => {
+      const data = snapshot.docs.map((doc) => doc.data());
+      setGameEntries(data[0].entries as Entry[]);
+    });
+    return () => unsubscribe();
+  }, [entries]);
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel>
@@ -41,7 +56,7 @@ export function GameComponent({
         <div className="flex flex-col gap-4 p-2">
           <h2 className="text-2xl">Entries</h2>
           <div className="flex flex-col gap-2">
-            {entries.map((entry) => (
+            {gameEntires.map((entry) => (
               <li key={entry.id}>{entry.content}</li>
             ))}
           </div>

@@ -1,15 +1,20 @@
-import {Entry, Game, User} from "@/types";
+import { Entry, Game, User } from "@/types";
 import { initializeApp } from "@firebase/app";
 import {
-    collection,
-    doc,
-    getDocs as _getDocs,
-    getFirestore,
-    updateDoc,
+  collection,
+  doc,
+  getDocs as _getDocs,
+  getFirestore,
+  updateDoc,
+  onSnapshot,
 } from "@firebase/firestore";
-import { DocumentReference, getDoc } from "firebase/firestore";
+import {
+  DocumentData,
+  DocumentReference,
+  QuerySnapshot,
+  getDoc,
+} from "firebase/firestore";
 import { arrayUnion } from "firebase/firestore";
-
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -67,6 +72,12 @@ export async function getGameEntries(gameId: string): Promise<Game[]> {
   const docs = (await getGames()) as unknown as Game[];
   return docs.filter((g) => g.id === gameId);
 }
+//TODO: update query and not to load all data
+export function getEntriesSnapshot(
+  onUpdate: (snapshot: QuerySnapshot<DocumentData, DocumentData>) => void
+) {
+  return onSnapshot(gamesColRef(), onUpdate);
+}
 
 export async function getUsers(): Promise<User[]> {
   const userData = await getUsersDocs();
@@ -88,10 +99,10 @@ export async function getUser(userId: string): Promise<User | undefined> {
 }
 
 export async function insertEntry(entry: Entry, gameDocRef: string) {
-        try {
-            const gameDoc =doc(db, 'games', gameDocRef);
-            await updateDoc(gameDoc, { entries: arrayUnion(entry)})
-        }catch (err) {
-            console.log(err)
-        }
+  try {
+    const gameDoc = doc(db, "games", gameDocRef);
+    await updateDoc(gameDoc, { entries: arrayUnion(entry) });
+  } catch (err) {
+    console.log(err);
+  }
 }
