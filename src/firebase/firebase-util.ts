@@ -27,7 +27,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+export const db = getFirestore(app);
 
 const usersColRef = () => collection(db, "users");
 export const gamesColRef = () => collection(db, "games");
@@ -71,12 +71,6 @@ export async function getGame(gameId: string): Promise<Game | undefined> {
 export async function getGameEntries(gameId: string): Promise<Game[]> {
   const docs = (await getGames()) as unknown as Game[];
   return docs.filter((g) => g.id === gameId);
-}
-//TODO: update query and not to load all data
-export function getEntriesSnapshot(
-  onUpdate: (snapshot: QuerySnapshot<DocumentData, DocumentData>) => void
-) {
-  return onSnapshot(gamesColRef(), onUpdate);
 }
 
 export async function getUsers(): Promise<User[]> {

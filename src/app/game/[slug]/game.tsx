@@ -4,33 +4,40 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import {
-  getEntriesSnapshot,
-  getGame,
-  getGameEntries,
-} from "@/firebase/firebase-util";
+import { db } from "@/firebase/firebase-util";
 import { Entry, Game, User } from "@/types";
-import { onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
+function useGameEntries(gameId: string, initialEntires: Entry[]) {
+  const [gameEntires, setGameEntries] = useState(initialEntires);
+
+  useEffect(() => {
+    const docRef = doc(db, "games", gameId);
+    const unsubscribe = onSnapshot(docRef, (snapshot) => {
+      const gameData = snapshot.data() as Game;
+      setGameEntries(gameData.entries);
+      return () => {
+        unsubscribe();
+      };
+    });
+  }, [initialEntires, gameId]);
+
+  return gameEntires;
+}
+
 export function GameComponent({
+  gameId,
   entries,
   users,
   userId,
 }: {
+  gameId: string;
   userId: User["id"];
   entries: Entry[];
   users: User[];
 }) {
-  const [gameEntires, setGameEntries] = useState(entries);
-
-  useEffect(() => {
-    const unsubscribe = getEntriesSnapshot((snapshot) => {
-      const data = snapshot.docs.map((doc) => doc.data());
-      setGameEntries(data[0].entries as Entry[]);
-    });
-    return () => unsubscribe();
-  }, [entries]);
+  const gameEntires = useGameEntries(gameId, entries);
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel>

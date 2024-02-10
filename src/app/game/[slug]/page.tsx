@@ -36,6 +36,7 @@ export default async function CurrentGamePage(props: {
         <section className="flex flex-col gap-4 mt-10">
           <Card>
             <GameComponent
+              gameId={gameDocRef}
               userId={user?.value || ""}
               entries={entries}
               users={users}
