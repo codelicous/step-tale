@@ -1,20 +1,17 @@
 import { Entry, Game, User } from "@/types";
 import { initializeApp } from "@firebase/app";
 import {
+  getDocs as _getDocs,
   collection,
   doc,
-  getDocs as _getDocs,
   getFirestore,
-  updateDoc,
-  onSnapshot,
 } from "@firebase/firestore";
 import {
-  DocumentData,
   DocumentReference,
-  QuerySnapshot,
+  arrayUnion,
   getDoc,
+  updateDoc,
 } from "firebase/firestore";
-import { arrayUnion } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -45,12 +42,10 @@ export async function getGames(): Promise<Game[]> {
 }
 
 export async function getGame(gameId: string): Promise<Game | undefined> {
-  console.log("gameId", gameId);
-  const docs = (await getGames()) as unknown as Array<
-    Game & { users: DocumentReference<User>[] }
-  >;
-  console.log("game docs", docs);
-  const game = docs.find((g) => g.id === gameId);
+  const _d = doc(db, "games", gameId);
+  const game = (await getDoc(_d)).data() as Game & {
+    users: DocumentReference<User>[];
+  };
 
   return (
     game && {
@@ -78,9 +73,7 @@ export async function getUsers(): Promise<User[]> {
   return userData.docs
     .map((doc) => {
       const d = doc.data();
-      console.log("user id", doc.id);
-      console.log("user games", doc.ref);
-      console.log("user data", d);
+
       return { ...d, id: doc.id } as User;
     })
     .reverse();
@@ -92,10 +85,16 @@ export async function getUser(userId: string): Promise<User | undefined> {
   return docs.find((u) => u.id === userId);
 }
 
-export async function insertEntry(entry: Entry, gameDocRef: string) {
+export async function insertEntry(entry: Entry, gameData: Game) {
   try {
-    const gameDoc = doc(db, "games", gameDocRef);
+    const gameDoc = doc(db, "games", gameData.id);
     await updateDoc(gameDoc, { entries: arrayUnion(entry) });
+    const nextPlayerIndex =
+      (gameData.activePlayerIndex + 1) % gameData.users.length;
+    await updateDoc(gameDoc, {
+      activePlayerIndex:
+        (gameData.activePlayerIndex + 1) % gameData.users.length,
+    });
   } catch (err) {
     console.log(err);
   }

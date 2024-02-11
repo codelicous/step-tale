@@ -27,6 +27,7 @@ export type Game = {
   id: string;
   name: string;
   status: GameStatus;
+  activePlayerIndex: number;
   entries: Entry[];
   users: User[];
 };

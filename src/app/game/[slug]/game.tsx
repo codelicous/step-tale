@@ -1,74 +1,91 @@
 "use client";
 import {
-  ResizablePanelGroup,
-  ResizablePanel,
   ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { db } from "@/firebase/firebase-util";
-import { Entry, Game, User } from "@/types";
-import { doc, onSnapshot } from "firebase/firestore";
-import { useEffect, useState } from "react";
-
-function useGameEntries(gameId: string, initialEntires: Entry[]) {
-  const [gameEntires, setGameEntries] = useState(initialEntires);
-
-  useEffect(() => {
-    const docRef = doc(db, "games", gameId);
-    const unsubscribe = onSnapshot(docRef, (snapshot) => {
-      const gameData = snapshot.data() as Game;
-      setGameEntries(gameData.entries);
-      return () => {
-        unsubscribe();
-      };
-    });
-  }, [initialEntires, gameId]);
-
-  return gameEntires;
-}
+import { Entry, User } from "@/types";
+import { DocumentReference, onSnapshot, getDoc } from "firebase/firestore";
+import { useState, useEffect } from "react";
 
 export function GameComponent({
-  gameId,
+  currentPlayer,
   entries,
   users,
   userId,
 }: {
-  gameId: string;
+  currentPlayer: User;
   userId: User["id"];
   entries: Entry[];
-  users: User[];
+  users: DocumentReference<User>[];
 }) {
-  const gameEntires = useGameEntries(gameId, entries);
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel>
         <div className="flex flex-col gap-4 p-2 bg-gray-900 text-gray-100">
           <h2 className="text-2xl">Users</h2>
           <div className="flex flex-col gap-2">
-            {users.map((user) => (
-              <li
-                className={
-                  userId === user.id ? "text-red-300" : "text-gray-100"
-                }
-                key={user.id}
-              >
-                {user.name}
-              </li>
-            ))}
+            <GameUsers
+              currentPlayer={currentPlayer}
+              userId={userId}
+              usersRefs={users}
+            />
           </div>
         </div>
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel>
-        {" "}
-        <div className="flex flex-col gap-4 p-2">
+        <div className="flex flex-col gap-4 p-2 max-h-80 overflow-auto">
           <h2 className="text-2xl">Entries</h2>
           <div className="flex flex-col gap-2">
-            {gameEntires.map((entry) => (
-              <li key={entry.id}>{entry.content}</li>
-            ))}
+            <p>
+              {entries
+                .map((e) => e.content)
+                .join(". ")
+                .replace("..", ".")}
+            </p>
           </div>
         </div>
       </ResizablePanel>
     </ResizablePanelGroup>
+  );
+}
+
+function GameUsers({
+  usersRefs,
+  userId,
+  currentPlayer,
+}: {
+  currentPlayer: User;
+  userId: string;
+  usersRefs: DocumentReference<User>[];
+}) {
+  const [users, setUsers] = useState<User[]>([]);
+  useEffect(() => {
+    const setUsersFromFirebase = async () => {
+      const data = (await Promise.all(
+        usersRefs
+          .map(async (u) => await getDoc(u))
+          .map(async (u) => {
+            const data = (await u).data() as Partial<User>;
+            return { ...data, id: (await u).id } as User;
+          })
+      )) as User[];
+      setUsers(data);
+    };
+    setUsersFromFirebase();
+  }, [usersRefs]);
+
+  return (
+    <>
+      {users.map((user) => (
+        <li
+          className={userId === user.id ? "text-red-300" : "text-gray-100"}
+          key={user.id}
+        >
+          {user.name} {currentPlayer.id === user.id && "(current)"}
+        </li>
+      ))}
+    </>
   );
 }
