@@ -4,10 +4,7 @@ import { cookies } from "next/headers";
 
 //TODO: add game list
 export default async function ChooseGamePage() {
-  const userData = cookies().get("user") as unknown as {
-    name: string;
-    value: string;
-  };
+  
 
   if (!userData) return redirect("/auth");
   const user = await getUser(userData?.value);
